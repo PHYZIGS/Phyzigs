@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYZIGS Exam Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0d58b; /* Light Beige background */
+            color: #4A1C40; /* Deep Maroon text */
+        }
+        header {
+            background-color: maroon; /* Deep Maroon header */
+            color: #FAF3E0; /* Light Beige text */
+            text-align: center;
+            padding: 1em 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 2em;
+            background-color: #c7805f9d; /* White background */
+            border: 2px solid #4A1C40;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .question {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #F7E1D7;
+            border: 1px solid #4A1C40;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .options label {
+            display: block;
+            margin: 0.5em 0;
+            padding: 0.5em;
+            background-color: #d59fec;
+            border: 1px solid #4A1C40;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        .options label:hover {
+            background-color: #FAD4C0;
+            transform: translateY(-2px);
+        }
+        .btn {
+            background-color: #4A1C40;
+            color: #FAF3E0;
+            border: none;
+            padding: 0.7em 1.5em;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #6A284A;
+            transform: scale(1.05);
+        }
+        .btn:active {
+            transform: scale(1);
+        }
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5em;
+            font-size: 0.7em;
+            padding: 0.5em;
+            background-color: #ced1ee;
+            border: 1px solid #4A1C40;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .timer {
+            font-weight: bold;
+            font-size: 0.7em;
+            color: #2E7D32;
+            background-color: #DFF2E1;
+            padding: 0.5em;
+            border-radius: 5px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        .status div {
+            padding: 0.2em;
+            border-radius: 5px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        #attempted {
+            background-color: #0aed21; /* Green for attempted */
+        }
+        #remaining {
+            background-color: #f60606; /* White for remaining */
+        }
+        #marked {
+            background-color: #0b62ef; /* Blue for marked */
+        }
+        #question-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5em;
+        }
+        .question-number {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #FFFFFF;
+            border: 2px solid #4A1C40;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        .question-number.attempted {
+            background-color: #0cf423; /* Green */
+        }
+        .question-number.marked {
+            background-color: #0560f4; /* Blue */
+        }
+        .question-number:hover {
+            transform: scale(1.1);
+        }
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            background: #FFFFFF;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 50%;
+        }
+        .chart-container {
+            margin-top: 1em;
+        }
+        canvas {
+            width: 500px;
+            height: auto;
+        }
+        #start-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #start-modal-content {
+            background: #FFFFFF;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 100%;
+        }
+        #start-modal-content p {
+            margin-bottom: 2em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PHYZIGS Exam Portal</h1>
+    </header>
+    
+    <!-- Start Exam Modal -->
+    <div id="start-modal">
+        <div id="start-modal-content">
+            <h2>Instructions</h2>
+            <p>Welcome to the online exam! Please read the following instructions carefully before starting:</p>
+            <ul>
+                <li>You will have 10 minutes to complete the exam.</li>
+                <li>If you wish to mark a question for later review, click "Mark for Later".</li>
+                <li>Once you finish the exam, click "Submit" to view your results.</li>
+            </ul>
+            <p>The exam will be available from 4:30 PM onwards. The Start Exam button will be enabled then.</p>
+            <button class="btn" id="start-exam-btn" disabled>Start Exam</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="topic-heading">Sample Exam Topic</div>
+        <div class="status">
+            <div>Attempted: <span id="attempted">0</span></div>
+            <div>Remaining: <span id="remaining">3</span></div>
+            <div>Marked for Later: <span id="marked">0</span></div>
+            <div class="timer">Time Left: <span id="timer">10:00</span></div>
+        </div>
+        <div id="question-numbers">
+            <div class="question-number" data-question="1">1</div>
+            <div class="question-number" data-question="2">2</div>
+            <div class="question-number" data-question="3">3</div>
+            <div class="question-number" data-question="4">4</div>
+            <div class="question-number" data-question="5">5</div>
+            <div class="question-number" data-question="6">6</div>
+            <div class="question-number" data-question="7">7</div>
+            <div class="question-number" data-question="8">8</div>
+            <div class="question-number" data-question="9">9</div>
+            <div class="question-number" data-question="10">10</div>
+            <div class="question-number" data-question="11">11</div>
+            <div class="question-number" data-question="12">12</div>
+            <div class="question-number" data-question="13">13</div>
+            <div class="question-number" data-question="14">14</div>
+            <div class="question-number" data-question="15">15</div>
+            <div class="question-number" data-question="16">16</div>
+            <div class="question-number" data-question="17">17</div>
+            <div class="question-number" data-question="18">18</div>
+            <div class="question-number" data-question="19">19</div>
+            <div class="question-number" data-question="20">20</div>
+            <div class="question-number" data-question="21">21</div>
+            <div class="question-number" data-question="22">22</div>
+            <div class="question-number" data-question="23">23</div>
+            <div class="question-number" data-question="24">24</div>
+            <div class="question-number" data-question="25">25</div>
+            <div class="question-number" data-question="26">26</div>
+            <div class="question-number" data-question="27">27</div>
+            <div class="question-number" data-question="28">28</div>
+            <div class="question-number" data-question="29">29</div>
+            <div class="question-number" data-question="30">30</div>
+            
+        </div>
+        <div class="question" data-question="1">
+            <h3>1. What is the value of 15 + 9?</h3>
+            <div class="options">
+                <label><input type="radio" name="q1" value="24"> 24</label>
+                <label><input type="radio" name="q1" value="25"> 25</label>
+                <label><input type="radio" name="q1" value="26"> 26</label>
+                <label><input type="radio" name="q1" value="27"> 27</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="2" style="display: none;">
+            <h3>2. Which of the following is a prime number?</h3>
+            <div class="options">
+                <label><input type="radio" name="q2" value="4"> 4</label>
+                <label><input type="radio" name="q2" value="6"> 6</label>
+                <label><input type="radio" name="q2" value="7"> 7</label>
+                <label><input type="radio" name="q2" value="9"> 9</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="3" style="display: none;">
+            <h3>3. What is the square of 12?</h3>
+            <div class="options">
+                <label><input type="radio" name="q3" value="144"> 144</label>
+                <label><input type="radio" name="q3" value="132"> 132</label>
+                <label><input type="radio" name="q3" value="122"> 122</label>
+                <label><input type="radio" name="q3" value="112"> 112</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="4" style="display: none;">
+            <h3>4. What is the perimeter of a square with side length 5 cm?</h3>
+            <div class="options">
+                <label><input type="radio" name="q4" value="10"> 10 cm</label>
+                <label><input type="radio" name="q4" value="15"> 15 cm</label>
+                <label><input type="radio" name="q4" value="20"> 20 cm</label>
+                <label><input type="radio" name="q4" value="25"> 25 cm</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="5" style="display: none;">
+            <h3>5. Which of the following is the greatest common divisor (GCD) of 12 and 18?</h3>
+            <div class="options">
+                <label><input type="radio" name="q5" value="3"> 3</label>
+                <label><input type="radio" name="q5" value="6"> 6</label>
+                <label><input type="radio" name="q5" value="4"> 4</label>
+                <label><input type="radio" name="q5" value="2"> 2</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="6" style="display: none;">
+            <h3>6. The sum of angles in a triangle is:</h3>
+            <div class="options">
+                <label><input type="radio" name="q6" value="180°"> 180°</label>
+                <label><input type="radio" name="q6" value="360°"> 360°</label>
+                <label><input type="radio" name="q6" value="90°"> 90°</label>
+                <label><input type="radio" name="q6" value="270°"> 270°</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="7" style="display: none;">
+            <h3>7. What is the value of 5²?</h3>
+            <div class="options">
+                <label><input type="radio" name="q7" value="10"> 10</label>
+                <label><input type="radio" name="q7" value="20"> 20</label>
+                <label><input type="radio" name="q7" value="25"> 25</label>
+                <label><input type="radio" name="q7" value="30"> 30</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="8" style="display: none;">
+            <h3>8. If the diameter of a circle is 14 cm, what is its radius?</h3>
+            <div class="options">
+                <label><input type="radio" name="q8" value="14 cm"> 14 cm</label>
+                <label><input type="radio" name="q8" value="7 cm"> 7 cm</label>
+                <label><input type="radio" name="q8" value="21 cm"> 21 cm</label>
+                <label><input type="radio" name="q8" value="28 cm"> 28 cm</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="9" style="display: none;">
+            <h3>9. Which of the following is the result of 25 ÷ 5?</h3>
+            <div class="options">
+                <label><input type="radio" name="q9" value="5"> 5</label>
+                <label><input type="radio" name="q9" value="10"> 10</label>
+                <label><input type="radio" name="q9" value="15"> 15</label>
+                <label><input type="radio" name="q9" value="20"> 20</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="10" style="display: none;">
+            <h3>10. What is the value of 7 × 8?</h3>
+            <div class="options">
+                <label><input type="radio" name="q10" value="54"> 54</label>
+                <label><input type="radio" name="q10" value="56"> 56</label>
+                <label><input type="radio" name="q10" value="58"> 58</label>
+                <label><input type="radio" name="q10" value="60"> 60</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="11" style="display: none;">
+            <h3>11. Which of the following is the LCM (Least Common Multiple) of 6 and 8?</h3>
+            <div class="options">
+                <label><input type="radio" name="q11" value="24"> 24</label>
+                <label><input type="radio" name="q11" value="48"> 48</label>
+                <label><input type="radio" name="q11" value="12"> 12</label>
+                <label><input type="radio" name="q11" value="36"> 36</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="12" style="display: none;">
+            <h3>12. What is the cube of 3?</h3>
+            <div class="options">
+                <label><input type="radio" name="q12" value="6"> 6</label>
+                <label><input type="radio" name="q12" value="9"> 9</label>
+                <label><input type="radio" name="q12" value="27"> 27</label>
+                <label><input type="radio" name="q12" value="81"> 81</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="13" style="display: none;">
+            <h3>13. Which of the following is the area of a triangle with base 10 cm and height 5 cm?</h3>
+            <div class="options">
+                <label><input type="radio" name="q13" value="25 cm²"> 25 cm²</label>
+                <label><input type="radio" name="q13" value="50 cm²"> 50 cm²</label>
+                <label><input type="radio" name="q13" value="15 cm²"> 15 cm²</label>
+                <label><input type="radio" name="q13" value="30 cm²"> 30 cm²</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="14" style="display: none;">
+            <h3>14. Which of the following is the result of ¾ + ½?</h3>
+            <div class="options">
+                <label><input type="radio" name="q14" value="5/4"> 5/4</label>
+                <label><input type="radio" name="q14" value="7/4"> 7/4</label>
+                <label><input type="radio" name="q14" value="3/2"> 3/2</label>
+                <label><input type="radio" name="q14" value="1/2"> 1/2</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="15" style="display: none;">
+            <h3>15. What is the value of 6 × 6 - 4?</h3>
+            <div class="options">
+                <label><input type="radio" name="q15" value="36"> 36</label>
+                <label><input type="radio" name="q15" value="32"> 32</label>
+                <label><input type="radio" name="q15" value="30"> 30</label>
+                <label><input type="radio" name="q15" value="28"> 28</label>
+            </div>
+        </div>
+        
+        <div class="question" data-question="16" style="display: none;">
+            <h3>16. What is the value of 9²?</h3>
+            <div class="options">
+                <label><input type="radio" name="q16" value="72"> 72</label>
+                <label><input type="radio" name="q16" value="81"> 81</label>
+                <label><input type="radio" name="q16" value="90"> 90</label>
+                <label><input type="radio" name="q16" value="92"> 92</label>
+            </div>
+        </div>
+        <div class="question" data-question="1">
+    <h3>1. What is the value of 15 + 9?</h3>
+    <div class="options">
+        <label><input type="radio" name="q1" value="24"> 24</label>
+        <label><input type="radio" name="q1" value="25"> 25</label>
+        <label><input type="radio" name="q1" value="26"> 26</label>
+        <label><input type="radio" name="q1" value="27"> 27</label>
+    </div>
+</div>
+
+<div class="question" data-question="2" style="display: none;">
+    <h3>2. Which of the following is a prime number?</h3>
+    <div class="options">
+        <label><input type="radio" name="q2" value="4"> 4</label>
+        <label><input type="radio" name="q2" value="6"> 6</label>
+        <label><input type="radio" name="q2" value="7"> 7</label>
+        <label><input type="radio" name="q2" value="9"> 9</label>
+    </div>
+</div>
+
+<div class="question" data-question="3" style="display: none;">
+    <h3>3. What is the square of 12?</h3>
+    <div class="options">
+        <label><input type="radio" name="q3" value="144"> 144</label>
+        <label><input type="radio" name="q3" value="132"> 132</label>
+        <label><input type="radio" name="q3" value="122"> 122</label>
+        <label><input type="radio" name="q3" value="112"> 112</label>
+    </div>
+</div>
+
+<div class="question" data-question="4" style="display: none;">
+    <h3>4. What is the perimeter of a square with side length 5 cm?</h3>
+    <div class="options">
+        <label><input type="radio" name="q4" value="10"> 10 cm</label>
+        <label><input type="radio" name="q4" value="15"> 15 cm</label>
+        <label><input type="radio" name="q4" value="20"> 20 cm</label>
+        <label><input type="radio" name="q4" value="25"> 25 cm</label>
+    </div>
+</div>
+
+<div class="question" data-question="5" style="display: none;">
+    <h3>5. Which of the following is the greatest common divisor (GCD) of 12 and 18?</h3>
+    <div class="options">
+        <label><input type="radio" name="q5" value="3"> 3</label>
+        <label><input type="radio" name="q5" value="6"> 6</label>
+        <label><input type="radio" name="q5" value="4"> 4</label>
+        <label><input type="radio" name="q5" value="2"> 2</label>
+    </div>
+</div>
+
+<div class="question" data-question="6" style="display: none;">
+    <h3>6. The sum of angles in a triangle is:</h3>
+    <div class="options">
+        <label><input type="radio" name="q6" value="180°"> 180°</label>
+        <label><input type="radio" name="q6" value="360°"> 360°</label>
+        <label><input type="radio" name="q6" value="90°"> 90°</label>
+        <label><input type="radio" name="q6" value="270°"> 270°</label>
+    </div>
+</div>
+
+<div class="question" data-question="7" style="display: none;">
+    <h3>7. What is the value of 5²?</h3>
+    <div class="options">
+        <label><input type="radio" name="q7" value="10"> 10</label>
+        <label><input type="radio" name="q7" value="20"> 20</label>
+        <label><input type="radio" name="q7" value="25"> 25</label>
+        <label><input type="radio" name="q7" value="30"> 30</label>
+    </div>
+</div>
+
+<div class="question" data-question="8" style="display: none;">
+    <h3>8. If the diameter of a circle is 14 cm, what is its radius?</h3>
+    <div class="options">
+        <label><input type="radio" name="q8" value="14 cm"> 14 cm</label>
+        <label><input type="radio" name="q8" value="7 cm"> 7 cm</label>
+        <label><input type="radio" name="q8" value="21 cm"> 21 cm</label>
+        <label><input type="radio" name="q8" value="28 cm"> 28 cm</label>
+    </div>
+</div>
+
+<div class="question" data-question="9" style="display: none;">
+    <h3>9. Which of the following is the result of 25 ÷ 5?</h3>
+    <div class="options">
+        <label><input type="radio" name="q9" value="5"> 5</label>
+        <label><input type="radio" name="q9" value="10"> 10</label>
+        <label><input type="radio" name="q9" value="15"> 15</label>
+        <label><input type="radio" name="q9" value="20"> 20</label>
+    </div>
+</div>
+
+<div class="question" data-question="10" style="display: none;">
+    <h3>10. What is the value of 7 × 8?</h3>
+    <div class="options">
+        <label><input type="radio" name="q10" value="54"> 54</label>
+        <label><input type="radio" name="q10" value="56"> 56</label>
+        <label><input type="radio" name="q10" value="58"> 58</label>
+        <label><input type="radio" name="q10" value="60"> 60</label>
+    </div>
+</div>
+
+<div class="question" data-question="11" style="display: none;">
+    <h3>11. Which of the following is the LCM (Least Common Multiple) of 6 and 8?</h3>
+    <div class="options">
+        <label><input type="radio" name="q11" value="24"> 24</label>
+        <label><input type="radio" name="q11" value="48"> 48</label>
+        <label><input type="radio" name="q11" value="12"> 12</label>
+        <label><input type="radio" name="q11" value="36"> 36</label>
+    </div>
+</div>
+
+<div class="question" data-question="12" style="display: none;">
+    <h3>12. What is the cube of 3?</h3>
+    <div class="options">
+        <label><input type="radio" name="q12" value="6"> 6</label>
+        <label><input type="radio" name="q12" value="9"> 9</label>
+        <label><input type="radio" name="q12" value="27"> 27</label>
+        <label><input type="radio" name="q12" value="81"> 81</label>
+    </div>
+</div>
+
+<div class="question" data-question="13" style="display: none;">
+    <h3>13. Which of the following is the area of a triangle with base 10 cm and height 5 cm?</h3>
+    <div class="options">
+        <label><input type="radio" name="q13" value="25 cm²"> 25 cm²</label>
+        <label><input type="radio" name="q13" value="50 cm²"> 50 cm²</label>
+        <label><input type="radio" name="q13" value="15 cm²"> 15 cm²</label>
+        <label><input type="radio" name="q13" value="30 cm²"> 30 cm²</label>
+    </div>
+</div>
+
+<div class="question" data-question="14" style="display: none;">
+    <h3>14. Which of the following is the result of ¾ + ½?</h3>
+    <div class="options">
+        <label><input type="radio" name="q14" value="5/4"> 5/4</label>
+        <label><input type="radio" name="q14" value="7/4"> 7/4</label>
+        <label><input type="radio" name="q14" value="3/2"> 3/2</label>
+        <label><input type="radio" name="q14" value="1/2"> 1/2</label>
+    </div>
+</div>
+
+<div class="question" data-question="15" style="display: none;">
+    <h3>15. What is the value of 6 × 6 - 4?</h3>
+    <div class="options">
+        <label><input type="radio" name="q15" value="36"> 36</label>
+        <label><input type="radio" name="q15" value="32"> 32</label>
+        <label><input type="radio" name="q15" value="30"> 30</label>
+        <label><input type="radio" name="q15" value="28"> 28</label>
+    </div>
+</div>
+
+<div class="question" data-question="16" style="display: none;">
+    <h3>16. What is the value of 9²?</h3>
+    <div class="options">
+        <label><input type="radio" name="q16" value="72"> 72</label>
+        <label><input type="radio" name="q16" value="81"> 81</label>
+        <label><input type="radio" name="q16" value="90"> 90</label>
+        <label><input type="radio" name="q16" value="92"> 92</label>
+    </div>
+</div>
+<div class="question" data-question="16" style="display: none;">
+    <h3>16. What is the value of 9²?</h3>
+    <div class="options">
+        <label><input type="radio" name="q16" value="72"> 72</label>
+        <label><input type="radio" name="q16" value="81"> 81</label>
+        <label><input type="radio" name="q16" value="90"> 90</label>
+        <label><input type="radio" name="q16" value="92"> 92</label>
+    </div>
+</div>
+
+<div class="question" data-question="17" style="display: none;">
+    <h3>17. What is the chemical symbol for oxygen?</h3>
+    <div class="options">
+        <label><input type="radio" name="q17" value="O"> O</label>
+        <label><input type="radio" name="q17" value="O2"> O2</label>
+        <label><input type="radio" name="q17" value="O3"> O3</label>
+        <label><input type="radio" name="q17" value="OX"> OX</label>
+    </div>
+</div>
+
+<div class="question" data-question="18" style="display: none;">
+    <h3>18. Which planet is known as the Red Planet?</h3>
+    <div class="options">
+        <label><input type="radio" name="q18" value="Mars"> Mars</label>
+        <label><input type="radio" name="q18" value="Earth"> Earth</label>
+        <label><input type="radio" name="q18" value="Venus"> Venus</label>
+        <label><input type="radio" name="q18" value="Jupiter"> Jupiter</label>
+    </div>
+</div>
+
+<div class="question" data-question="19" style="display: none;">
+    <h3>19. What is the boiling point of water in Celsius?</h3>
+    <div class="options">
+        <label><input type="radio" name="q19" value="100°C"> 100°C</label>
+        <label><input type="radio" name="q19" value="90°C"> 90°C</label>
+        <label><input type="radio" name="q19" value="50°C"> 50°C</label>
+        <label><input type="radio" name="q19" value="0°C"> 0°C</label>
+    </div>
+</div>
+
+<div class="question" data-question="20" style="display: none;">
+    <h3>20. Which of these is a conductor of electricity?</h3>
+    <div class="options">
+        <label><input type="radio" name="q20" value="Wood"> Wood</label>
+        <label><input type="radio" name="q20" value="Water"> Water</label>
+        <label><input type="radio" name="q20" value="Plastic"> Plastic</label>
+        <label><input type="radio" name="q20" value="Copper"> Copper</label>
+    </div>
+</div>
+
+<div class="question" data-question="21" style="display: none;">
+    <h3>21. What is the chemical formula for carbon dioxide?</h3>
+    <div class="options">
+        <label><input type="radio" name="q21" value="CO2"> CO2</label>
+        <label><input type="radio" name="q21" value="CO"> CO</label>
+        <label><input type="radio" name="q21" value="C2O"> C2O</label>
+        <label><input type="radio" name="q21" value="C2O2"> C2O2</label>
+    </div>
+</div>
+
+<div class="question" data-question="22" style="display: none;">
+    <h3>22. Which of the following is a type of simple machine?</h3>
+    <div class="options">
+        <label><input type="radio" name="q22" value="Wheelbarrow"> Wheelbarrow</label>
+        <label><input type="radio" name="q22" value="Lever"> Lever</label>
+        <label><input type="radio" name="q22" value="Car"> Car</label>
+        <label><input type="radio" name="q22" value="Clock"> Clock</label>
+    </div>
+</div>
+
+<div class="question" data-question="23" style="display: none;">
+    <h3>23. What is the force that pulls objects towards the Earth?</h3>
+    <div class="options">
+        <label><input type="radio" name="q23" value="Magnetism"> Magnetism</label>
+        <label><input type="radio" name="q23" value="Friction"> Friction</label>
+        <label><input type="radio" name="q23" value="Gravity"> Gravity</label>
+        <label><input type="radio" name="q23" value="Pressure"> Pressure</label>
+    </div>
+</div>
+
+<div class="question" data-question="24" style="display: none;">
+    <h3>24. What is the largest organ in the human body?</h3>
+    <div class="options">
+        <label><input type="radio" name="q24" value="Heart"> Heart</label>
+        <label><input type="radio" name="q24" value="Brain"> Brain</label>
+        <label><input type="radio" name="q24" value="Liver"> Liver</label>
+        <label><input type="radio" name="q24" value="Skin"> Skin</label>
+    </div>
+</div>
+
+<div class="question" data-question="25" style="display: none;">
+    <h3>25. Which of these is an example of an exothermic reaction?</h3>
+    <div class="options">
+        <label><input type="radio" name="q25" value="Melting ice"> Melting ice</label>
+        <label><input type="radio" name="q25" value="Burning wood"> Burning wood</label>
+        <label><input type="radio" name="q25" value="Boiling water"> Boiling water</label>
+        <label><input type="radio" name="q25" value="Dissolving salt in water"> Dissolving salt in water</label>
+    </div>
+</div>
+
+<div class="question" data-question="26" style="display: none;">
+    <h3>26. What is the atomic number of carbon?</h3>
+    <div class="options">
+        <label><input type="radio" name="q26" value="6"> 6</label>
+        <label><input type="radio" name="q26" value="8"> 8</label>
+        <label><input type="radio" name="q26" value="12"> 12</label>
+        <label><input type="radio" name="q26" value="16"> 16</label>
+    </div>
+</div>
+
+<div class="question" data-question="27" style="display: none;">
+    <h3>27. What is the result of 8 × 7?</h3>
+    <div class="options">
+        <label><input type="radio" name="q27" value="56"> 56</label>
+        <label><input type="radio" name="q27" value="58"> 58</label>
+        <label><input type="radio" name="q27" value="60"> 60</label>
+        <label><input type="radio" name="q27" value="62"> 62</label>
+    </div>
+</div>
+
+<div class="question" data-question="28" style="display: none;">
+    <h3>28. What is the chemical formula for methane?</h3>
+    <div class="options">
+        <label><input type="radio" name="q28" value="CH4"> CH4</label>
+        <label><input type="radio" name="q28" value="CO2"> CO2</label>
+        <label><input type="radio" name="q28" value="C2H6"> C2H6</label>
+        <label><input type="radio" name="q28" value="C3H8"> C3H8</label>
+    </div>
+</div>
+
+<div class="question" data-question="29" style="display: none;">
+    <h3>29. What is the force that opposes the motion of objects?</h3>
+    <div class="options">
+        <label><input type="radio" name="q29" value="Friction"> Friction</label>
+        <label><input type="radio" name="q29" value="Gravity"> Gravity</label>
+        <label><input type="radio" name="q29" value="Magnetism"> Magnetism</label>
+        <label><input type="radio" name="q29" value="Electricity"> Electricity</label>
+    </div>
+</div>
+
+<div class="question" data-question="30" style="display: none;">
+    <h3>30. Which of these is a renewable source of energy?</h3>
+    <div class="options">
+        <label><input type="radio" name="q30" value="Coal"> Coal</label>
+        <label><input type="radio" name="q30" value="Wind"> Wind</label>
+        <label><input type="radio" name="q30" value="Oil"> Oil</label>
+        <label><input type="radio" name="q30" value="Natural Gas"> Natural Gas</label>
+    </div>
+</div>
+
+
+<!-- Continue this structure up to question 30 -->
+
+        
+        <!-- Repeat the same structure for the remaining questions -->
+        
+        <button class="btn" id="next-btn">Next</button>
+        <button class="btn" id="mark-btn">Mark for Later</button>
+        <button class="btn" id="submit-btn" style="display: none;">Submit</button>
+    </div>
+    
+    <div id="modal">
+        <div id="modal-content">
+            <h2>Exam Analysis</h2>
+            <p>Your score: <span id="final-score">0</span> / 3</p>
+            <p>Correct Answers: <span id="correct-answers">0</span></p>
+            <p>Incorrect Answers: <span id="incorrect-answers">0</span></p>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+            <button class="btn" onclick="endExam()">End Exam</button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 30;
+        const markedQuestions = new Set();
+        const timerElement = document.getElementById('timer');
+        const attemptedElement = document.getElementById('attempted');
+        const remainingElement = document.getElementById('remaining');
+        const markedElement = document.getElementById('marked');
+        
+        const correctAnswers = {
+    1: '24',  // Correct answer for question 1
+    2: '7',    // Correct answer for question 2
+    3: '144',  // Correct answer for question 3
+    4: '20 cm', // Correct answer for question 4
+    5: '6',    // Correct answer for question 5
+    6: '180°',  // Correct answer for question 6
+    7: '25',    // Correct answer for question 7
+    8: '7 cm',  // Correct answer for question 8
+    9: '5',     // Correct answer for question 9
+    10: '56',   // Correct answer for question 10
+    11: '24',   // Correct answer for question 11
+    12: '27',   // Correct answer for question 12
+    13: '25 cm²', // Correct answer for question 13
+    14: '7/4',  // Correct answer for question 14
+    15: '32',   // Correct answer for question 15
+    16: '81',   // Correct answer for question 16
+    17: '10',   // Correct answer for question 17
+    18: '20',   // Correct answer for question 18
+    19: 'The Sun', // Correct answer for question 19
+    20: 'Carbon dioxide', // Correct answer for question 20
+    21: 'Jupiter', // Correct answer for question 21
+    22: 'Melting',  // Correct answer for question 22
+    23: 'Leaves',  // Correct answer for question 23
+    24: 'CO₂',     // Correct answer for question 24
+    25: 'Ampere',  // Correct answer for question 25
+    26: 'Gravity', // Correct answer for question 26
+    27: 'Solar energy', // Correct answer for question 27
+    28: '100°C',   // Correct answer for question 28
+    29: 'Malleable', // Correct answer for question 29
+    30: 'Temperature' // Correct answer for question 30
+};
+
+    
+        // Get the target start time (4:30 PM)
+        const targetStartTime = new Date();
+        targetStartTime.setHours(6, 30, 0, 0); // 4:30 PM today
+    
+        function updateStatus() {
+            const attempted = document.querySelectorAll('input:checked').length;
+            attemptedElement.textContent = attempted;
+            remainingElement.textContent = totalQuestions - attempted - markedQuestions.size;
+            markedElement.textContent = markedQuestions.size;
+    
+            document.querySelectorAll('.question-number').forEach(el => {
+                const qNumber = el.dataset.question;
+                const isAttempted = document.querySelector(`input[name="q${qNumber}"]:checked`);
+    
+                if (isAttempted) {
+                    el.classList.add('attempted');
+                    el.classList.remove('marked');
+                } else if (markedQuestions.has(Number(qNumber))) {
+                    el.classList.add('marked');
+                    el.classList.remove('attempted');
+                } else {
+                    el.classList.remove('attempted', 'marked');
+                }
+            });
+        }
+    
+        function startTimer(duration) {
+            let remainingTime = duration;
+            const interval = setInterval(() => {
+                let minutes = Math.floor(remainingTime / 60);
+                let seconds = remainingTime % 60;
+                if (seconds < 10) seconds = `0${seconds}`;
+                timerElement.textContent = `${minutes}:${seconds}`;
+    
+                if (remainingTime <= 0) {
+                    clearInterval(interval);
+                    endExam();
+                }
+                remainingTime--;
+            }, 1000);
+        }
+    
+        function showQuestion(qNumber) {
+            document.querySelectorAll('.question').forEach(q => q.style.display = 'none');
+            document.querySelector(`.question[data-question="${qNumber}"]`).style.display = 'block';
+    
+            // Show Submit Button only on the last question
+            if (qNumber === totalQuestions) {
+                document.getElementById('submit-btn').style.display = 'inline-block';
+                document.getElementById('next-btn').style.display = 'none'; // Hide next button on the last question
+            } else {
+                document.getElementById('submit-btn').style.display = 'none';
+                document.getElementById('next-btn').style.display = 'inline-block'; // Show next button for other questions
+            }
+        }
+    
+        function endExam() {
+            let correctCount = 0;
+            let incorrectCount = 0;
+    
+            // Check the answers
+            for (let i = 1; i <= totalQuestions; i++) {
+                const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selectedOption && selectedOption.value === correctAnswers[i]) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+            }
+    
+            // Calculate percentages
+            const correctPercentage = ((correctCount / totalQuestions) * 100).toFixed(2);
+            const incorrectPercentage = ((incorrectCount / totalQuestions) * 100).toFixed(2);
+    
+            document.getElementById('final-score').textContent = `${correctCount} / ${totalQuestions}`;
+            document.getElementById('correct-answers').textContent = correctCount;
+            document.getElementById('incorrect-answers').textContent = incorrectCount;
+    
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Correct Answers', 'Incorrect Answers'],
+                    datasets: [{
+                        data: [correctCount, incorrectCount],
+                        backgroundColor: ['#0CF423', '#F60606'],
+                    }],
+                },
+            });
+    
+            document.getElementById('modal').style.display = 'flex';
+        }
+    
+        document.getElementById('start-exam-btn').addEventListener('click', () => {
+            document.getElementById('start-modal').style.display = 'none';
+            startTimer(10 * 60); // 10 minutes countdown
+            showQuestion(currentQuestion);
+        });
+    
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+            updateStatus();
+        });
+    
+        document.getElementById('mark-btn').addEventListener('click', () => {
+            markedQuestions.add(currentQuestion);
+            updateStatus();
+        });
+    
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            endExam();
+        });
+    
+        document.querySelectorAll('.question-number').forEach(el => {
+            el.addEventListener('click', () => {
+                currentQuestion = Number(el.dataset.question);
+                showQuestion(currentQuestion);
+            });
+        });
+    
+        setInterval(() => {
+            const now = new Date();
+            if (now >= targetStartTime) {
+                document.getElementById('start-exam-btn').disabled = false;
+            }
+        }, 1000);
+    </script>
+    </body>
+    
+</html>
