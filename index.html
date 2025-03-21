@@ -144,7 +144,7 @@
 
         // Validate phone number (WhatsApp number)
         function validatePhoneNumber(number) {
-            const regex = /^[0-9]{10}$/;
+            const regex = /^[0-9]{11}$/;
             return regex.test(number);
         }
 
@@ -156,7 +156,7 @@
             const password = loginForm['password'].value;
 
             if (!validatePhoneNumber(username)) {
-                errorMessage.textContent = "Please enter a valid 10-digit phone number.";
+                errorMessage.textContent = "Please enter a user id and password";
                 errorMessage.style.display = "block";
                 return;
             }
